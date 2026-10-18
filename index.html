@@ -1,0 +1,434 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Le Corbeau et le Renard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#CFE8F5">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Nunito:wght@500;800&display=swap">
+<style>
+/* Layout: one-screen app — scene on top, current verse in the middle, three big round buttons at the bottom. */
+:root{
+  --bg:#CFE8F5; --bg2:#EAF6FC; --fg:#1E2A32; --muted:#55707F;
+  --card:#FFFFFF; --leaf:#3E7C4A; --fox:#E07B2A; --cheese:#F2C23A; --sky:#9ED3EE;
+  --btn-listen:#3E7C4A; --btn-repeat:#E07B2A; --btn-recite:#D9A520; --btn-stop:#C84A3A; --btn-ok:#2E9E5B; --btn-help:#4A7DC8;
+  --ring:rgba(30,42,50,.18);
+  --display:"Fredoka","Nunito","Segoe UI",system-ui,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#13202B; --bg2:#1C2E3C; --fg:#F1F6F9; --muted:#A7BAC6; --card:#223647; --sky:#2E5670; --ring:rgba(255,255,255,.22); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#13202B; --bg2:#1C2E3C; --fg:#F1F6F9; --muted:#A7BAC6; --card:#223647; --sky:#2E5670; --ring:rgba(255,255,255,.22); color-scheme:dark }
+
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:8px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(18px,5vw,26px);margin:0;letter-spacing:.2px;white-space:nowrap;flex:1 1 auto}
+.stars{display:flex;gap:1px;flex-wrap:wrap;justify-content:center;flex:1 1 100%;order:3}
+.stars span{font-size:13px;line-height:1;opacity:.25;transition:opacity .3s,transform .3s}
+.stars span.on{opacity:1;transform:scale(1.15)}
+.stars span.half{opacity:.6}
+
+.scene{flex:1 1 0;min-height:100px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.scene svg{height:100%;width:auto;max-width:100%}
+#fox{opacity:0;transition:opacity .8s,transform .8s}
+#cheese{transition:transform 1.1s cubic-bezier(.3,.6,.4,1.2)}
+#crowhead{transition:transform .6s}
+svg.s-fox #fox,svg.s-flatter #fox,svg.s-drop #fox,svg.s-foxcheese #fox,svg.s-shame #fox{opacity:1}
+svg.s-flatter #fox{transform:translate(0,-6px)}
+svg.s-drop #cheese,svg.s-foxcheese #cheese,svg.s-shame #cheese{transform:translate(118px,150px) rotate(40deg)}
+svg.s-drop #crowbeak,svg.s-foxcheese #crowbeak{transform:rotate(-14deg)}
+svg.s-shame #crowhead{transform:rotate(22deg)}
+#crowbeak{transition:transform .5s;transform-origin:150px 108px}
+#crowhead{transform-origin:135px 112px}
+.listening #micwave{opacity:1}
+#micwave{opacity:0;transition:opacity .3s}
+@media (prefers-reduced-motion: reduce){ #fox,#cheese,#crowhead,#crowbeak,.stars span{transition:none} }
+
+.micnote{background:#FFE8B3;color:#5A3E00;border-radius:12px;padding:6px 12px;font-size:13px;font-weight:800;text-align:center;line-height:1.3}
+.verse{background:var(--card);border-radius:22px;padding:14px 18px;text-align:center;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 2px 0 var(--ring)}
+.verse .num{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:800}
+.verse .txt{font-family:var(--display);font-weight:500;font-size:clamp(18px,5.2vw,28px);line-height:1.25;text-wrap:balance}
+.verse .hint{font-size:14px;color:var(--muted);font-weight:800}
+
+.controls{display:flex;justify-content:center;align-items:flex-end;gap:14px;flex-wrap:wrap;padding-bottom:6px}
+.big{width:clamp(78px,22vw,110px);height:clamp(78px,22vw,110px);border-radius:50%;border:0;color:#fff;font-size:clamp(34px,9vw,48px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 6px 0 rgba(0,0,0,.18);cursor:pointer;transition:transform .08s;font-family:var(--body)}
+.big small{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;opacity:.95}
+.big:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.big:focus-visible{outline:4px solid var(--fg);outline-offset:3px}
+.b-listen{background:var(--btn-listen)} .b-repeat{background:var(--btn-repeat)} .b-recite{background:var(--btn-recite)}
+.b-stop{background:var(--btn-stop)} .b-ok{background:var(--btn-ok)} .b-help{background:var(--btn-help)} .b-again{background:#7B5CC7} .b-mic{background:#C84A8A}
+.b-mic.live{background:#C84A3A;box-shadow:0 0 0 6px rgba(200,74,58,.35),0 6px 0 rgba(0,0,0,.18)}
+.controls .big.b-stop,.controls .big.b-again,.controls .big.b-help,.controls .big.small{width:clamp(64px,17vw,84px);height:clamp(64px,17vw,84px);font-size:clamp(26px,7vw,34px)}
+.pulse{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@media (prefers-reduced-motion: reduce){.pulse{animation:none}}
+
+.gate{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:10;padding:24px;text-align:center}
+.gate button{width:min(60vw,220px);height:min(60vw,220px);border-radius:50%;border:0;background:var(--cheese);font-size:min(28vw,100px);box-shadow:0 10px 0 rgba(0,0,0,.18);cursor:pointer}
+.gate p{font-family:var(--display);font-size:clamp(20px,5vw,28px);margin:0;text-wrap:balance}
+.gate .sub{font-family:var(--body);font-size:14px;color:var(--muted);max-width:34ch}
+
+.speed{display:flex;gap:4px;background:var(--card);border-radius:999px;padding:3px}
+.speed button{border:0;background:transparent;border-radius:999px;font-size:16px;padding:4px 8px;cursor:pointer;color:var(--fg)}
+.speed button[aria-pressed="true"]{background:var(--bg)}
+.toast{position:fixed;left:50%;top:14%;transform:translateX(-50%);font-family:var(--display);font-size:clamp(34px,12vw,72px);pointer-events:none;opacity:0;transition:opacity .3s,transform .5s;z-index:5;filter:drop-shadow(0 4px 0 rgba(0,0,0,.15))}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-10px)}
+</style>
+
+<div class="gate" id="gate">
+  <button id="gateBtn" aria-label="Commencer">🐦‍⬛</button>
+  <p>Appuie sur l'oiseau pour commencer</p>
+  <p class="sub">Monte le son du téléphone. L'appli parle, il n'y a rien à lire.</p>
+</div>
+
+<header>
+  <h1>Le Corbeau et le Renard</h1>
+  <div class="stars" id="stars" aria-label="Progression"></div>
+  <div class="speed" role="group" aria-label="Vitesse de lecture">
+    <button id="slow" aria-pressed="false" title="Lent">🐢</button>
+    <button id="normal" aria-pressed="true" title="Normal">🐇</button>
+  </div>
+</header>
+
+<div class="scene">
+<svg id="scene" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--sky)"/><stop offset="1" stop-color="var(--bg2)"/></linearGradient>
+  </defs>
+  <rect x="0" y="0" width="400" height="300" rx="22" fill="url(#sky)"/>
+  <ellipse cx="200" cy="300" rx="260" ry="60" fill="#7FB069"/>
+  <!-- tree -->
+  <g id="tree">
+    <rect x="30" y="60" width="34" height="240" rx="10" fill="#7A5230"/>
+    <path d="M60 135 Q120 118 190 128" stroke="#7A5230" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <circle cx="48" cy="60" r="48" fill="#3E7C4A"/><circle cx="95" cy="80" r="36" fill="#4F9158"/><circle cx="25" cy="95" r="30" fill="#4F9158"/>
+  </g>
+  <!-- crow -->
+  <g id="crow">
+    <ellipse cx="120" cy="118" rx="30" ry="20" fill="#20242B"/>
+    <path d="M92 118 L70 130 L95 128 Z" fill="#20242B"/>
+    <g id="crowhead">
+      <circle cx="140" cy="106" r="15" fill="#20242B"/>
+      <circle cx="146" cy="103" r="3.5" fill="#fff"/><circle cx="147" cy="103" r="1.8" fill="#000"/>
+      <g id="crowbeak"><path d="M150 106 L172 110 L150 114 Z" fill="#20242B"/></g>
+    </g>
+    <path d="M110 136 L108 146 M114 136 L116 146" stroke="#20242B" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <!-- cheese (starts in the beak) -->
+  <g id="cheese">
+    <path d="M160 102 L186 108 L160 116 Z" fill="var(--cheese)" stroke="#C9941A" stroke-width="1.5"/>
+    <circle cx="170" cy="109" r="1.8" fill="#C9941A"/>
+  </g>
+  <!-- fox -->
+  <g id="fox">
+    <ellipse cx="300" cy="262" rx="46" ry="22" fill="var(--fox)"/>
+    <path d="M340 262 Q375 250 372 228" stroke="var(--fox)" stroke-width="16" fill="none" stroke-linecap="round"/>
+    <circle cx="372" cy="226" r="9" fill="#fff"/>
+    <g>
+      <circle cx="268" cy="236" r="22" fill="var(--fox)"/>
+      <path d="M250 222 L246 196 L262 216 Z M286 222 L290 196 L274 216 Z" fill="var(--fox)"/>
+      <path d="M248 244 Q258 256 268 256 Q278 256 288 244 Z" fill="#fff"/>
+      <circle cx="259" cy="234" r="3" fill="#000"/><circle cx="277" cy="234" r="3" fill="#000"/>
+      <circle cx="268" cy="250" r="3" fill="#2a1a10"/>
+    </g>
+  </g>
+  <!-- mic indicator -->
+  <g id="micwave">
+    <circle cx="200" cy="40" r="20" fill="#C84A3A"/>
+    <rect x="195" y="29" width="10" height="16" rx="5" fill="#fff"/>
+    <path d="M191 44 Q200 54 209 44" stroke="#fff" stroke-width="2.5" fill="none"/>
+  </g>
+</svg>
+</div>
+
+<div class="micnote" id="micNote" hidden>🎤 Micro indisponible ici : l'appli ne peut pas entendre ni vérifier ce que dit l'enfant. Pour la vérification vocale, utilisez la version hébergée (fichier HTML).</div>
+<div class="verse" id="verse">
+  <div class="num" id="verseNum">&nbsp;</div>
+  <div class="txt" id="verseTxt">Bienvenue !</div>
+  <div class="hint" id="verseHint">&nbsp;</div>
+</div>
+
+<div class="controls" id="controls"></div>
+<div class="toast" id="toast">⭐</div>
+
+<script>
+(function(){
+'use strict';
+// `t` is the text shown; `say` (optional) is what the voice pronounces when the synthesizer mangles `t` (false liaisons, odd words).
+const FABLE = [
+  {t:"Maître Corbeau, sur un arbre perché,", s:"perch"},
+  {t:"Tenait en son bec un fromage.", s:"perch"},
+  {t:"Maître Renard, par l'odeur alléché,", s:"fox"},
+  {t:"Lui tint à peu près ce langage :", s:"fox"},
+  {t:"« Hé ! bonjour, Monsieur du Corbeau.", s:"flatter"},
+  {t:"Que vous êtes joli ! que vous me semblez beau !", s:"flatter"},
+  {t:"Sans mentir, si votre ramage", s:"flatter"},
+  {t:"Se rapporte à votre plumage,", s:"flatter"},
+  {t:"Vous êtes le Phénix des hôtes de ces bois. »", s:"flatter"},
+  {t:"À ces mots le Corbeau ne se sent pas de joie ;", s:"flatter"},
+  {t:"Et pour montrer sa belle voix,", s:"flatter"},
+  {t:"Il ouvre un large bec, laisse tomber sa proie.", s:"drop"},
+  {t:"Le Renard s'en saisit, et dit : « Mon bon Monsieur,", s:"foxcheese"},
+  {t:"Apprenez que tout flatteur", s:"foxcheese"},
+  {t:"Vit aux dépens de celui qui l'écoute :", say:"Vi, aux dépens de celui qui l'écoute.", s:"foxcheese"},
+  {t:"Cette leçon vaut bien un fromage, sans doute. »", s:"foxcheese"},
+  {t:"Le Corbeau, honteux et confus,", s:"shame"},
+  {t:"Jura, mais un peu tard, qu'on ne l'y prendrait plus.", s:"shame"}
+];
+const sayOf = v => v.say || v.t;
+const PRAISE = ["Bravo !","Super !","Très bien !","Génial !","Oui, c'est ça !","Magnifique !"];
+const $ = id => document.getElementById(id);
+const scene=$('scene'), verseTxt=$('verseTxt'), verseNum=$('verseNum'), verseHint=$('verseHint'), controls=$('controls'), toast=$('toast'), starsEl=$('stars');
+
+// ---------- speech synthesis ----------
+const synth = window.speechSynthesis;
+let rate = 0.85, frVoice=null;
+function pickVoice(){
+  const vs = synth ? synth.getVoices() : [];
+  const fr = vs.filter(v=>/^fr/i.test(v.lang));
+  frVoice = fr.find(v=>/fr[-_]FR/i.test(v.lang) && /google|natural|premium|enhanced/i.test(v.name)) || fr.find(v=>/fr[-_]FR/i.test(v.lang)) || fr[0] || null;
+}
+if(synth){ pickVoice(); synth.onvoiceschanged = pickVoice; }
+let speakToken=0, cancelled=false, running=false;
+// Every pending wait (speech, listening, tap) registers a resolver here so Stop can end them all at once.
+const pending = new Set();
+function abortAll(){ for(const f of [...pending]) f(); pending.clear(); }
+function speak(text, opt={}){
+  return new Promise(res=>{
+    if(!synth || cancelled){ setTimeout(res, cancelled?0:800); return; }
+    const my = ++speakToken; let done=false;
+    const finish=()=>{ if(done) return; done=true; pending.delete(finish); res(); };
+    pending.add(finish);
+    stopListening();
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='fr-FR'; u.rate = opt.rate || rate; u.pitch = opt.pitch || 1.05;
+    if(frVoice) u.voice=frVoice;
+    u.onend=finish; u.onerror=finish;
+    setTimeout(()=>synth.speak(u), 60);
+    setTimeout(()=>{ if(my===speakToken) finish(); }, 2500 + text.length*110);
+  });
+}
+const wait = ms => new Promise(r=>{ if(cancelled){ r(); return; } const done=()=>{ pending.delete(done); r(); }; pending.add(done); setTimeout(done,ms); });
+
+// ---------- speech recognition (works only where the microphone is allowed) ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let micOK = !!SR, rec=null;
+function micLost(){ micOK=false; $('micNote').hidden=false; }
+if(!SR) setTimeout(micLost,0);
+// Detect a blocked microphone up front (e.g. inside claude.ai) instead of waiting for the first press.
+try{ navigator.permissions && navigator.permissions.query({name:'microphone'}).then(p=>{ if(p.state==='denied') micLost(); }).catch(()=>{}); }catch(e){}
+function stopListening(){ if(rec){ try{rec.onend=null; rec.abort();}catch(e){} rec=null; } scene.classList.remove('listening'); }
+let lastMicError='', currentAbort=null;
+function listen(maxMs){
+  // Keeps the microphone open for up to maxMs. Android ends a recognition session on its own after a short
+  // silence (or right away while the speaker is still busy), so sessions are restarted until something is heard.
+  // Resolves with the transcript (possibly ''), or null when recognition is unavailable.
+  return new Promise(res=>{
+    if(!micOK || cancelled){ res(micOK ? '' : null); return; }
+    const t0=Date.now(); let transcript='', finished=false, fatal=false, silenceTimer=null, starts=0;
+    lastMicError='';
+    const finish=v=>{ if(finished) return; finished=true; pending.delete(abort); if(currentAbort===abort) currentAbort=null; clearTimeout(silenceTimer); clearTimeout(hardTimer); stopListening(); res(v); };
+    const abort=()=>finish('');
+    pending.add(abort); currentAbort=abort;
+    const hardTimer=setTimeout(()=>finish(transcript), maxMs);
+    function session(){
+      if(finished || cancelled) return;
+      let r; try{ r=new SR(); }catch(e){ micLost(); finish(null); return; }
+      rec=r; starts++;
+      r.lang='fr-FR'; r.interimResults=true; r.continuous=false; r.maxAlternatives=1;
+      let got='';
+      r.onresult=e=>{
+        got=''; for(const x of e.results) got+=' '+x[0].transcript;
+        showHeard(transcript+got);
+        if(e.results[e.results.length-1].isFinal){
+          transcript+=got; got='';
+          clearTimeout(silenceTimer); silenceTimer=setTimeout(()=>finish(transcript), 1200); // let the child finish the line
+        }
+      };
+      r.onerror=e=>{ lastMicError=e.error||'erreur'; if(e.error==='not-allowed'||e.error==='service-not-allowed'||e.error==='audio-capture'){ fatal=true; micLost(); } };
+      r.onend=()=>{
+        if(finished || rec!==r) return;
+        transcript+=got; got='';
+        if(fatal){ finish(null); return; }
+        if(transcript.trim()){ finish(transcript); return; }
+        if(Date.now()-t0 < maxMs-600) setTimeout(session, 250); else finish('');
+      };
+      try{ r.start(); scene.classList.add('listening'); }
+      catch(e){ if(starts<4) setTimeout(session, 300); else { micLost(); finish(null); } }
+    }
+    setTimeout(session, 350); // give the speaker a moment to release the audio path
+  });
+}
+function showHeard(s){ s=(s||'').trim(); verseHint.textContent = s ? '🎤 « '+s.slice(-80)+' »' : '🎤 À toi !'; }
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>2);
+function score(verse, heard){
+  const vw=[...new Set(norm(verse))], hw=norm(heard||'');
+  if(!vw.length) return 1;
+  let hit=0;
+  for(const w of vw){ if(hw.some(h=>h===w || (w.length>=5 && (h.startsWith(w.slice(0,4)) || w.startsWith(h.slice(0,4)))))) hit++; }
+  return hit/vw.length;
+}
+
+// ---------- UI helpers ----------
+function setScene(s){ const keep = scene.classList.contains('listening') ? ' listening' : ''; scene.setAttribute('class', 's-'+s+keep); }
+let stars = FABLE.map(()=>0); // 0 none, 1 with help, 2 alone
+function renderStars(){
+  starsEl.innerHTML = stars.map(v=>`<span class="${v===2?'on':v===1?'half':''}">⭐</span>`).join('');
+}
+function showVerse(i, hint){
+  const v = FABLE[i];
+  setScene(v.s);
+  verseNum.textContent = `Vers ${i+1} sur ${FABLE.length}`;
+  verseTxt.textContent = v.t;
+  verseHint.innerHTML = hint || '&nbsp;';
+}
+function home(msg){
+  stopListening(); synth && synth.cancel(); speakToken++;
+  setScene('perch');
+  verseNum.innerHTML='&nbsp;'; verseTxt.textContent = msg || 'Que veux-tu faire ?'; verseHint.innerHTML='&nbsp;';
+  controls.innerHTML = `
+    <button class="big b-listen" id="bListen" aria-label="Écouter la fable">👂<small>Écouter</small></button>
+    <button class="big b-repeat" id="bRepeat" aria-label="Répéter la fable">🗣️<small>Répéter</small></button>
+    <button class="big b-recite" id="bRecite" aria-label="Réciter la fable">⭐<small>Réciter</small></button>`;
+  $('bListen').onclick=()=>run(modeListen);
+  $('bRepeat').onclick=()=>run(modeRepeat);
+  $('bRecite').onclick=()=>run(modeRecite);
+}
+function stopButton(){ const b=document.createElement('button'); b.className='big b-stop'; b.innerHTML='✋<small>Stop</small>'; b.setAttribute('aria-label','Arrêter'); b.onclick=stopNow; return b; }
+async function stopNow(){
+  cancelled=true; abortAll(); stopListening(); if(synth) synth.cancel();
+  await new Promise(r=>setTimeout(r,100)); // the running mode sees `cancelled` and exits
+  running=false; cancelled=false;
+  home('On arrête.');
+  await speak('On arrête. À bientôt !');
+}
+function setControls(...btns){ controls.innerHTML=''; btns.forEach(b=>controls.appendChild(b)); }
+function mkBtn(cls, icon, label, aria, onclick){ const b=document.createElement('button'); b.className='big '+cls; b.innerHTML=icon+'<small>'+label+'</small>'; b.setAttribute('aria-label',aria||label); b.onclick=onclick; return b; }
+// Waits for the child's turn. The green OK button is always there; the microphone, when it works, only
+// validates automatically when it recognises the verse. Resolves {how:'voice'|'tap'|'almost'|'again'|'help'|'stop', heard}.
+function awaitChild(v, opts={}){
+  return new Promise(res=>{
+    if(cancelled){ res({how:'stop'}); return; }
+    let done=false, talking=false;
+    const finish=r=>{ if(done) return; done=true; pending.delete(abort); if(currentAbort) currentAbort(); res(r); };
+    const abort=()=>finish({how:'stop'}); pending.add(abort);
+    const btns=[stopButton(), mkBtn('b-again','🔁','Encore','Réentendre le vers',()=>finish({how:'again'}))];
+    if(opts.help) btns.push(mkBtn('b-help','💡','Aide','Aide',()=>finish({how:'help'})));
+    if(micOK){
+      // With a microphone: the child presses the mic, speaks, and the app judges what it heard.
+      const mic=mkBtn('b-mic pulse','🎤','Je parle','Je parle',async()=>{
+        if(talking||done) return; talking=true; mic.classList.remove('pulse'); mic.classList.add('live');
+        showHeard('');
+        const heard = await listen(10000);
+        talking=false; mic.classList.add('pulse'); mic.classList.remove('live');
+        if(done) return;
+        if(heard===null){ setControls(...btns.filter(b=>b!==mic)); verseHint.textContent='✓ Appuie sur OK quand c\'est dit'; return; }
+        const sc=score(v.t, heard);
+        if(sc>=0.5) finish({how:'voice', heard});
+        else if(heard.trim()) finish({how:'almost', heard, score:sc});
+        else finish({how:'silent'});
+      });
+      btns.push(mic);
+      btns.push(mkBtn('b-ok small','✓','OK','Valider quand même',()=>finish({how:'tap'})));
+      verseHint.textContent='🎤 Appuie sur le micro et dis le vers';
+    } else {
+      btns.push(mkBtn('b-ok pulse','✓','OK','C\'est dit',()=>finish({how:'tap'})));
+      verseHint.textContent='✓ Appuie sur OK quand c\'est dit';
+    }
+    setControls(...btns);
+  });
+}
+const ALMOST=["Presque !","Pas loin !","Tu y es presque !","C'est bien, encore un effort !"];
+const almost = () => ALMOST[Math.floor(Math.random()*ALMOST.length)];
+function cheer(txt){ toast.textContent=txt||'⭐'; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1200); }
+const praise = () => PRAISE[Math.floor(Math.random()*PRAISE.length)];
+
+// ---------- modes ----------
+async function run(mode){ if(running) return; running=true; cancelled=false; try{ await mode(); }finally{ running=false; } }
+
+async function modeListen(){
+  setControls(stopButton());
+  await speak("Écoute bien la fable. Le Corbeau et le Renard, de Jean de La Fontaine.");
+  for(let i=0;i<FABLE.length && !cancelled;i++){
+    showVerse(i); await speak(sayOf(FABLE[i])); await wait(350);
+  }
+  if(cancelled) return;
+  await speak("C'est fini ! Tu veux la réécouter, ou essayer de la répéter ?");
+  home('Encore ?');
+}
+
+async function modeRepeat(){
+  setControls(stopButton());
+  await speak(micOK ? "Je dis un vers. Ensuite, appuie sur le micro rose et répète-le. Je t'écoute, et je te dis si c'est bon. C'est parti !"
+                    : "Je dis un vers, et tu le répètes après moi. Quand c'est dit, on appuie sur le bouton vert. C'est parti !");
+  for(let i=0;i<FABLE.length && !cancelled;i++){
+    const v=FABLE[i];
+    showVerse(i); await speak(sayOf(v));
+    if(cancelled) return;
+    let attempts=0, got=false;
+    while(!got && !cancelled){
+      showVerse(i, '🎤 À toi !');
+      const r = await awaitChild(v);
+      if(r.how==='stop' || cancelled) return;
+      if(r.how==='again'){ await speak(sayOf(v)); continue; }
+      if(r.how==='silent'){ await speak("Je n'ai rien entendu. Appuie sur le micro, et parle bien fort !"); continue; }
+      if(r.how==='almost'){
+        attempts++;
+        if(attempts<3){ await speak(almost()+" Écoute bien, et réessaie : "+sayOf(v)); }
+        else { await speak("Ce n'est pas facile ! On le dit ensemble : "+sayOf(v)+" Tu peux réessayer, ou appuyer sur le bouton vert."); }
+        continue;
+      }
+      got=true; stars[i]=Math.max(stars[i], (r.how==='voice' && attempts===0) ? 2 : 1); renderStars();
+      cheer(r.how==='voice'?'⭐':'👍'); await speak(r.how==='voice' ? praise() : "D'accord, on continue !");
+    }
+  }
+  if(cancelled) return;
+  try{ localStorage.setItem('cr-stars', JSON.stringify(stars)); }catch(e){}
+  cheer('🏆');
+  await speak("Bravo, tu as répété toute la fable ! Tu peux essayer de la réciter tout seul avec l'étoile.");
+  home('Bravo !');
+}
+
+async function modeRecite(){
+  setControls(stopButton());
+  await speak(micOK ? "Récite la fable, vers par vers. Pour chaque vers, appuie sur le micro rose et dis-le. Si tu ne te souviens plus, appuie sur l'ampoule. À toi !"
+                    : "Récite la fable, vers par vers. Quand un vers est dit, on appuie sur le bouton vert. Si tu ne te souviens plus, appuie sur l'ampoule. À toi !");
+  for(let i=0;i<FABLE.length && !cancelled;i++){
+    const v=FABLE[i]; let helps=0, got=false;
+    while(!got && !cancelled){
+      showVerse(i, '🎤 Vers '+(i+1));
+      const r = await awaitChild(v, {help:true});
+      if(r.how==='stop' || cancelled) return;
+      if(r.how==='help'){ helps++; await speak(helps===1 ? "Ça commence par : "+firstWordsOf(v) : "Le vers, c'est : "+sayOf(v)); verseHint.textContent='💡 '+firstWords(v.t); continue; }
+      if(r.how==='again'){ helps++; await speak(sayOf(v)); continue; }
+      if(r.how==='silent'){ await speak("Je n'ai rien entendu. Appuie sur le micro et parle bien fort !"); continue; }
+      if(r.how==='almost'){ await speak(almost()+" Réessaie, ou appuie sur l'ampoule pour un indice."); continue; }
+      got=true; stars[i]=Math.max(stars[i], (helps===0 && r.how==='voice') ? 2 : 1); renderStars();
+      cheer(helps===0 && r.how==='voice' ? '⭐' : '👍'); if(r.how==='voice' || i%3===2 || i===FABLE.length-1) await speak(r.how==='voice' ? praise() : "On continue !");
+    }
+  }
+  if(cancelled) return;
+  try{ localStorage.setItem('cr-stars', JSON.stringify(stars)); }catch(e){}
+  const gold = stars.filter(s=>s===2).length;
+  cheer('🏆');
+  await speak(gold===FABLE.length ? "Incroyable ! Tu connais toute la fable par cœur !" : `Bravo ! Tu as récité la fable avec ${gold} étoiles d'or sur ${FABLE.length}. Continue comme ça !`);
+  home('Bravo !');
+}
+function firstWords(t){ return norm(t).length ? t.split(/\s+/).slice(0,4).join(' ').replace(/[,.;:«»]+$/,'') : t; }
+function firstWordsOf(v){ return firstWords(sayOf(v)); }
+
+// ---------- speed + gate + start ----------
+$('slow').onclick=()=>{ rate=0.7; $('slow').setAttribute('aria-pressed','true'); $('normal').setAttribute('aria-pressed','false'); };
+$('normal').onclick=()=>{ rate=0.85; $('slow').setAttribute('aria-pressed','false'); $('normal').setAttribute('aria-pressed','true'); };
+try{ const s=JSON.parse(localStorage.getItem('cr-stars')||'null'); if(Array.isArray(s)&&s.length===FABLE.length) stars=s; }catch(e){}
+renderStars(); setScene('perch');
+$('gateBtn').onclick = async ()=>{
+  $('gate').hidden=true; pickVoice();
+  home();
+  await speak("Bonjour ! On va apprendre Le Corbeau et le Renard. Appuie sur l'oreille verte pour écouter la fable, sur la bouche orange pour la répéter avec moi, ou sur l'étoile jaune pour la réciter. Pendant les exercices, le bouton vert sert à dire : c'est fait.");
+};
+})();
+</script>
+</body></html>
